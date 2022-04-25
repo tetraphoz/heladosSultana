@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define MAX_LINEA 100 // Numero de caracteres en una linea
+#define TAMANO_NOMBRE 50 // Numero de caracteres disponibles para el nombre
 
 typedef struct articulo{
     int  id;
     float precio;
-    char  nom[50];
+    char  nom[TAMANO_NOMBRE];
     int  cantidad;
 }art_t;
 
@@ -16,13 +18,17 @@ typedef struct inventario{
 
 inv_t leer_inventario(char archivo[]);
 void escribir_inventario(inv_t inv, char archivo[]);
-void agregar_art();
-void print_art();
-void eliminar_art();
-void modificar_art();
-void imprimir_art();
+
+
+int posicion_id(inv_t inv);
+void agregar_art(inv_t* inv);
+void eliminar_art(inv_t* inv);
+void modificar_art(inv_t* inv);
+void imprimir_art(inv_t inv);
 void imprimir_inventario(inv_t inv);
 int numero_lineas();
+int id_valido(int id, inv_t inv);
+void ingresar_art(int pos, inv_t* inv);
 
 
 int main(){
@@ -46,13 +52,13 @@ int main(){
         }while(menu > 6 || menu < 1);
 
         switch (menu) {
-            case 1: agregar_art(); break;
-            case 2: eliminar_art(); break;
-            case 3: modificar_art(); break;
-            case 4: imprimir_art(); break;
+            case 1: agregar_art(&inventario); break;
+            case 2: eliminar_art(&inventario); break;
+            case 3: modificar_art(&inventario); break;
+            case 4: imprimir_art(inventario); break;
             case 5: imprimir_inventario(inventario); break;
             case 6:
-                escribir_inventario(inv, archivo);
+                escribir_inventario(inventario, archivo);
                 printf("Adios :)\n"); break;
             default: printf("Hubo un error :(\n");
         }
@@ -112,54 +118,109 @@ void escribir_inventario(inv_t inv, char archivo[]){
     fclose(fp);
 }
 
-void agregar_art(){
+// TODO Revisar porque la cadena se corta en los espacios al ingresarse
+void ingresar_art(int pos, inv_t* inv){
+    int id = 0;
+    do{
+        printf("\nIngresa el id: ");
+        scanf("%d", &id);
+    }while(id < 0 || !id_valido(id, *inv));
+    inv->articulos[pos].id = id;
 
-    // Obtener inventario global?
-    // Realloc para un articulo mas e incrementar tamano
-    float precio;
+    float precio = 0;
     do{
         printf("\nIngresa el precio: ");
         scanf("%f", &precio);
     }while(precio < 0);
-    art.precio = precio;
+    inv->articulos[pos].precio = precio;
 
     // Limpiar buffer (no funciona fgets sin esto)
     int c;
     while((c = getchar()) != '\n' && c != EOF);
 
     // Usamos fgets para poder aceptar espacios
+    char nom[TAMANO_NOMBRE];
     printf("\nIngresa el nombre:\n");
-    fgets(art.nom, 49, stdin);
+    fgets(nom, TAMANO_NOMBRE-1, stdin); // Dejamos espacio para el \0 al final de la cadena
 
     // Limpiamos el \n que sobra
-    art.nom[strcspn(art.nom, "\n")] = 0;
+    strncpy(inv->articulos[pos].nom, nom, strlen(nom)-1);
 
-    printf("\nIngresa la fecha: ");
-    scanf("%s", art.fecha);
-
+    int cantidad = 0;
+    do{
+        printf("\nIngresa la cantidad: ");
+        scanf("%d", &cantidad);
+    }while(cantidad < 0);
+    inv->articulos[pos].cantidad = cantidad;
 }
 
-void print_art(){
-
+void agregar_art(inv_t* inv){
+    // Generamos espacio para un articulo mas
+    inv->tamano++;
+    realloc(inv->articulos, inv->tamano * sizeof(art_t));
+    ingresar_art(inv->tamano-1, inv);
 }
 
-void eliminar_art(){
-    // Obtener inventario global?
-    // Realloc para un articulo menos y decrementar tamano
-
+void imprimir_art(inv_t inv){
+    int pos = posicion_id(inv);
+    if(pos >= 0) {
+        printf("\nID:\t%d\nPrecio:\t$%.2f\nNombre:\t%s\nCantidad:\t%d\n",
+               inv.articulos[pos].id, inv.articulos[pos].precio, inv.articulos[pos].nom,
+               inv.articulos[pos].cantidad);
+    }
 }
 
-void modificar_art(){
-    // Obtener inventario global?
-
+void eliminar_art(inv_t* inv){
+    int pos = posicion_id(*inv);
+    if(pos >= 0) {
+        // Mover posicion de los elementos del arreglo un lugar a la izquierda
+        for(int i = pos; pos < inv->tamano; pos++){
+            inv->articulos[pos] = inv->articulos[pos+1];
+        }
+        // Realloc para un articulo menos y decrementar tamano
+        inv->tamano--;
+        realloc(inv->articulos, inv->tamano * sizeof(art_t));
+    }
 }
 
-void imprimir_art(){
-    printf("Ingresa el id del articulo que quieres seleccionar: ");
-
-
+void modificar_art(inv_t* inv){
+    int pos = posicion_id(*inv);
+    if(pos >= 0) ingresar_art(pos, inv); // Sobreescribimos sobre los valores anteriores
 }
 
 void imprimir_inventario(inv_t inv){
+    for(int pos = 0; pos < inv.tamano; pos++){
+        printf("\nID: %d\tPrecio: $%.2f\tNombre: %s\tCantidad: %d\n",
+               inv.articulos[pos].id, inv.articulos[pos].precio, inv.articulos[pos].nom,
+               inv.articulos[pos].cantidad);
+    }
+}
 
+int posicion_id(inv_t inv){
+    int id = 0;
+    do{
+        printf("Ingresa el id del articulo que quiere ver: ");
+        scanf("%d", &id);
+    }while(id < 0);
+
+    int pos = -1;
+    for(int i = 0; i < inv.tamano; i++){
+        if(id == inv.articulos[i].id){
+            pos = i;
+            break;
+        }
+    }
+    if(pos == -1) printf("No existe un articulo con ese id (Puede consultar los valores validos con la opcion 5.)\n");
+    return pos;
+}
+
+int id_valido(int id, inv_t inv){
+    // Validar que no se repitan los id
+    for(int i = 0; i < inv.tamano; i++){
+        if(id == inv.articulos[i].id){
+            printf("El id que ingreso ya esta registrado.\n");
+            return 0;
+        }
+    }
+    return 1;
 }
