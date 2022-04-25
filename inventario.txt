@@ -1,0 +1,8 @@
+1,12.50,Paleta de limon,0
+2,14.50,Paleta de chocolate,14
+3,200.00,Heldado de pistache,20
+4,200.00,Heldado de vainilla,20
+5,200.00,Heldado de chocolate,20
+6,200.00,Heldado de limon,20
+7,200.00,Heldado de nuez,20
+8,200.00,Heldado Napolitano,20
