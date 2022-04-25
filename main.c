@@ -42,7 +42,7 @@ int main(){
                 "Menu\n"
                 "1. Ingresar un articulo\n"
                 "2. Eliminar un articulo\n"
-                "3. Modificar un articulo\n"
+                "3. Modificar informacion de un articulo\n"
                 "4. Imprimir un articulo\n"
                 "5. Reporte de inventario\n"
                 "6. Salir\n"
@@ -57,9 +57,7 @@ int main(){
             case 3: modificar_art(&inventario); break;
             case 4: imprimir_art(inventario); break;
             case 5: imprimir_inventario(inventario); break;
-            case 6:
-                escribir_inventario(inventario, archivo);
-                printf("Adios :)\n"); break;
+            case 6: escribir_inventario(inventario, archivo); break;
             default: printf("Hubo un error :(\n");
         }
     }while(menu != 6);
@@ -119,12 +117,15 @@ void escribir_inventario(inv_t inv, char archivo[]){
 }
 
 void ingresar_art(int pos, inv_t* inv){
-    int id = 0;
-    do{
-        printf("\nIngresa el id: ");
-        scanf("%d", &id);
-    }while(id < 0 || !id_valido(id, *inv));
-    inv->articulos[pos].id = id;
+    // Si ya existe un id dejarlo igual
+    if(inv->articulos[pos].id == 0){
+        int id = 0;
+        do {
+          printf("\nIngresa el id: ");
+          scanf("%d", &id);
+        } while (id < 0 || !id_valido(id, *inv));
+        inv->articulos[pos].id = id;
+    }
 
     float precio = 0;
     do{
