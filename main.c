@@ -89,7 +89,7 @@ inv_t leer_inventario(char archivo[]){
     int linea = 0;
     while((fgets(contenido, sizeof(contenido), fp)) != NULL)
     {
-        sscanf(contenido, "%d,%f,%s,%d",
+        sscanf(contenido, "%d,%f,%[^,],%d",
                &articulos[linea].id,
                &articulos[linea].precio,
                articulos[linea].nom,
@@ -118,7 +118,6 @@ void escribir_inventario(inv_t inv, char archivo[]){
     fclose(fp);
 }
 
-// TODO Revisar porque la cadena se corta en los espacios al ingresarse
 void ingresar_art(int pos, inv_t* inv){
     int id = 0;
     do{
@@ -199,7 +198,7 @@ void imprimir_inventario(inv_t inv){
 int posicion_id(inv_t inv){
     int id = 0;
     do{
-        printf("Ingresa el id del articulo que quiere ver: ");
+        printf("Ingresa el id del articulo: ");
         scanf("%d", &id);
     }while(id < 0);
 
