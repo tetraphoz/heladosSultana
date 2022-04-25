@@ -6,3 +6,5 @@
 6,200.00,Heldado de limon,20
 7,200.00,Heldado de nuez,20
 8,200.00,Heldado Napolitano,20
+30,150.00,Helado de mango,20
+24,13.50,Paleta de mango,55

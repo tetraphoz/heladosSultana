@@ -139,7 +139,7 @@ void ingresar_art(int pos, inv_t* inv){
 
     // Usamos fgets para poder aceptar espacios
     char nom[TAMANO_NOMBRE];
-    printf("\nIngresa el nombre:\n");
+    printf("\nIngresa el nombre: ");
     fgets(nom, TAMANO_NOMBRE-1, stdin); // Dejamos espacio para el \0 al final de la cadena
 
     // Limpiamos el \n que sobra
@@ -215,6 +215,10 @@ int posicion_id(inv_t inv){
 
 int id_valido(int id, inv_t inv){
     // Validar que no se repitan los id
+    if(id == 0){
+        printf("El id tiene que ser positivo.\n");
+        return 0;
+    }
     for(int i = 0; i < inv.tamano; i++){
         if(id == inv.articulos[i].id){
             printf("El id que ingreso ya esta registrado.\n");
