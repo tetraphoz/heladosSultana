@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #define MAX_LINEA 100 // Numero de caracteres en una linea
 #define TAMANO_NOMBRE 50 // Numero de caracteres disponibles para el nombre
 
@@ -16,20 +17,22 @@ typedef struct inventario{
     int tamano;
 }inv_t;
 
+// Funciones de inventario
 inv_t leer_inventario(char archivo[]);
 void escribir_inventario(inv_t inv, char archivo[]);
+void imprimir_inventario(inv_t inv);
 
-
-int posicion_id(inv_t inv);
+// Funciones de articulos
 void agregar_art(inv_t* inv);
 void eliminar_art(inv_t* inv);
 void modificar_art(inv_t* inv);
 void imprimir_art(inv_t inv);
-void imprimir_inventario(inv_t inv);
-int numero_lineas();
-int id_valido(int id, inv_t inv);
 void ingresar_art(int pos, inv_t* inv);
 
+// Funciones misc
+int numero_lineas();
+int posicion_id(inv_t inv);
+int id_valido(int id, inv_t inv);
 
 int main(){
     char archivo[] = "inventario.txt";
@@ -189,6 +192,11 @@ void modificar_art(inv_t* inv){
 }
 
 void imprimir_inventario(inv_t inv){
+    if(inv.tamano == 0){
+        printf("El inventario esta vacio. Ingresa un nuevo articulo e intentalo de nuevo\n");
+        return;
+    }
+
     for(int pos = 0; pos < inv.tamano; pos++){
         printf("\nID: %d\tPrecio: $%.2f\tNombre: %s\tCantidad: %d\n",
                inv.articulos[pos].id, inv.articulos[pos].precio, inv.articulos[pos].nom,
