@@ -35,7 +35,7 @@ int posicion_id(inv_t inv);
 int id_valido(int id, inv_t inv);
 
 int main(){
-    char archivo[] = "inventario.txt";
+    char archivo[] = "inventario.dat";
     inv_t inventario = leer_inventario(archivo);
 
     int menu = 0;
