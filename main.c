@@ -4,6 +4,8 @@
 
 #define MAX_LINEA 100 // Numero de caracteres en una linea
 #define TAMANO_NOMBRE 50 // Numero de caracteres disponibles para el nombre
+#define TAMANO_ARCHIVO 20 // Numero de caracteres disponibles para el nombre del archivo
+#define MAX_INVENTARIO 100 // Numero maximo de articulos que podemos procesar
 
 typedef struct articulo{
     int  id;
@@ -30,12 +32,12 @@ void imprimir_art(inv_t inv);
 void ingresar_art(int pos, inv_t* inv);
 
 // Funciones misc
-int numero_lineas();
+int numero_lineas(char archivo[]);
 int posicion_id(inv_t inv);
 int id_valido(int id, inv_t inv);
 
 int main(){
-    char archivo[] = "inventario.dat";
+    char archivo[TAMANO_ARCHIVO] = "inventario.dat";
     inv_t inventario = leer_inventario(archivo);
 
     int menu = 0;
@@ -48,7 +50,7 @@ int main(){
                 "3. Modificar informacion de un articulo\n"
                 "4. Imprimir un articulo\n"
                 "5. Reporte de inventario\n"
-                "6. Salir\n"
+                "6. Salir (Guardar cambios)\n"
                 "Selecciona una opcion: "
             );
             scanf("%d", &menu);
@@ -64,26 +66,29 @@ int main(){
             default: printf("Hubo un error :(\n");
         }
     }while(menu != 6);
-    free(inventario.articulos);
     return 0;
 }
 
-int numero_lineas(FILE *fp){
+int numero_lineas(char archivo[TAMANO_ARCHIVO]){
+    FILE *fp = fopen(archivo, "r");
     int c;
     int tamano = 0;
-    while ((c = getc(fp)) != EOF)
-      if (c == '\n') tamano++;
 
-    rewind(fp);
+    do {
+      c = fgetc(fp);
+      if (c == '\n') tamano++;
+    } while (c != EOF);
+
+    fclose(fp);
+    /* printf("Tamano: %d\n", tamano); */
     return tamano;
 }
 
 inv_t leer_inventario(char archivo[]){
     FILE *fp;
     fp = fopen(archivo,"a+");
-    int tamano = numero_lineas(fp);
 
-    art_t* articulos = (art_t*) calloc(tamano, sizeof(art_t));
+    art_t articulos[MAX_INVENTARIO] = {};
 
     // Leer el contenido del archivo
     char contenido[MAX_LINEA]; // Caracteres en una linea
@@ -98,7 +103,7 @@ inv_t leer_inventario(char archivo[]){
         linea++;
     }
 
-    inv_t inv = {articulos, tamano};
+    inv_t inv = {articulos, numero_lineas(archivo)};
 
     fclose(fp);
     return inv;
@@ -129,6 +134,7 @@ void ingresar_art(int pos, inv_t* inv){
         } while (id < 0 || !id_valido(id, *inv));
         inv->articulos[pos].id = id;
     }
+    /* inv->articulos[pos].id = pos; */
 
     float precio = 0;
     do{
@@ -158,10 +164,14 @@ void ingresar_art(int pos, inv_t* inv){
 }
 
 void agregar_art(inv_t* inv){
-    // Generamos espacio para un articulo mas
+    if(inv->tamano >= MAX_INVENTARIO){
+        printf("El inventario ya esta lleno\n");
+        return;
+    }
+
+    ingresar_art(inv->tamano, inv);
+    // Actualizamos el tamano
     inv->tamano++;
-    realloc(inv->articulos, inv->tamano * sizeof(art_t));
-    ingresar_art(inv->tamano-1, inv);
 }
 
 void imprimir_art(inv_t inv){
@@ -180,9 +190,8 @@ void eliminar_art(inv_t* inv){
         for(int i = pos; pos < inv->tamano; pos++){
             inv->articulos[pos] = inv->articulos[pos+1];
         }
-        // Realloc para un articulo menos y decrementar tamano
+        // Reducimos el tamano
         inv->tamano--;
-        realloc(inv->articulos, inv->tamano * sizeof(art_t));
     }
 }
 
@@ -198,7 +207,7 @@ void imprimir_inventario(inv_t inv){
     }
 
     for(int pos = 0; pos < inv.tamano; pos++){
-        printf("\nID: %d\tPrecio: $%.2f\tNombre: %s\tCantidad: %d\n",
+        printf("ID: %d\tPrecio: $%.2f\tNombre: %s\tCantidad: %d\n",
                inv.articulos[pos].id, inv.articulos[pos].precio, inv.articulos[pos].nom,
                inv.articulos[pos].cantidad);
     }
